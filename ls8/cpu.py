@@ -2,16 +2,21 @@
 
 import sys
 
+program_filename = sys.argv[1]
+# print(program_filename)
+# sys.exit()
+
 LDI = 130
 PRN = 71
 HLT = 1
+MUL = 162
 
 class CPU:
     """Main CPU class."""
 
     def __init__(self):
         """Construct a new CPU."""
-        self.ram = [0] * 8
+        self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
 
@@ -21,26 +26,37 @@ class CPU:
     def ram_write(self, ram_index, ram_value):
         self.ram[ram_index] = ram_value
 
-    def load(self):
+    def load(self, program_filename):
         """Load a program into memory."""
 
         address = 0
+        with open(program_filename) as f:
+            for line in f:
+                line = line.split('#')
+                line = line[0].strip()
 
+                if line == '':
+                    continue
+
+                inst = int(line, 2)
+                self.ram[address] = inst
+                address += 1
+        
         # For now, we've just hardcoded a program:
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
+        # program = [
+        #     # From print8.ls8
+        #     0b10000010, # LDI R0,8
+        #     0b00000000,
+        #     0b00001000,
+        #     0b01000111, # PRN R0
+        #     0b00000000,
+        #     0b00000001, # HLT
+        # ]
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+        # for instruction in program:
+        #     self.ram[address] = instruction
+        #     address += 1
 
 
     def alu(self, op, reg_a, reg_b):
@@ -89,9 +105,16 @@ class CPU:
                 self.pc += 2
             elif inst == HLT:
                 running = False
+            elif inst == MUL:
+                num_one = self.ram_read(self.pc + 1)
+                num_two = self.ram_read(self.pc + 2)
+                multiplier = self.ram_read(num_one)
+                multiplicand = self.ram_read(num_two)
+                self.ram_write(num_one, multiplier * multiplicand)
+                self.pc += 3
             else:
                 print("Unknown instruction")
 
 cpu = CPU()
-cpu.load()
-cpu.run()
+cpu.load(program_filename)
+# cpu.run()
