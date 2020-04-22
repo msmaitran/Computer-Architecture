@@ -10,6 +10,9 @@ LDI = 130
 PRN = 71
 HLT = 1
 MUL = 162
+PUSH = 69
+POP = 70
+SP = 7
 
 class CPU:
     """Main CPU class."""
@@ -97,11 +100,11 @@ class CPU:
             if inst == LDI:
                 index = self.ram_read(self.pc + 1)
                 value = self.ram_read(self.pc + 2)
-                self.ram_write(index, value)
+                self.reg[index] = value
                 self.pc += 3
             elif inst == PRN:
                 index = self.ram_read(self.pc + 1)
-                print(self.ram_read(index))
+                print(self.reg[index])
                 self.pc += 2
             elif inst == HLT:
                 running = False
@@ -112,6 +115,18 @@ class CPU:
                 multiplicand = self.ram_read(num_two)
                 self.ram_write(num_one, multiplier * multiplicand)
                 self.pc += 3
+            elif inst == PUSH:
+                index = self.ram_read(self.pc + 1)
+                value = self.reg[index]
+                self.reg[SP] -= 1
+                self.ram_write(self.reg[SP], value)
+                self.pc += 2
+            elif inst == POP:
+                index = self.ram_read(self.pc + 1)
+                value = self.ram_read(self.reg[SP])
+                self.reg[index] = value
+                self.reg[SP] += 1
+                self.pc += 2
             else:
                 print("Unknown instruction")
 
