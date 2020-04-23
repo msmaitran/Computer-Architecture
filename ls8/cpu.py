@@ -12,6 +12,9 @@ HLT = 1
 MUL = 162
 PUSH = 69
 POP = 70
+CALL = 80
+RET = 17
+ADD = 160
 SP = 7
 
 class CPU:
@@ -127,6 +130,24 @@ class CPU:
                 self.reg[index] = value
                 self.reg[SP] += 1
                 self.pc += 2
+            elif inst == CALL:
+                return_addr = self.pc + 2
+                self.reg[SP] -= 1
+                self.ram_write(self.reg[SP], return_addr)
+                reg_num = self.ram_read(self.pc + 1)
+                dest_addr = self.reg[reg_num]
+                self.pc = dest_addr
+            elif inst == RET:
+                return_addr = self.ram_read(self.reg[SP])
+                self.reg[SP] += 1
+                self.pc = return_addr
+            elif inst == ADD:
+                reg_a = self.ram_read(self.pc + 1)
+                reg_b = self.ram_read(self.pc + 2)
+                value_a = self.reg[reg_a]
+                value_b = self.reg[reg_b]
+                self.reg[reg_a] = value_a + value_b
+                self.pc += 3
             else:
                 print("Unknown instruction")
 
